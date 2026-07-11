@@ -143,6 +143,16 @@ def row_to_case(row) -> dict:
 
 
 # ---------- Endpoints ----------
+@app.get("/")
+def root():
+    return {
+        "service": "SkinSense/ExpertDerm API",
+        "status": "running",
+        "docs": "/docs",
+        "health_check": "/api/health",
+    }
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "service": "SkinSense/ExpertDerm API"}
