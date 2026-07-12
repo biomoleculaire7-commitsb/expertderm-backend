@@ -64,12 +64,17 @@ def init_db():
             marker INTEGER,
             marker_label_ar TEXT,
             marker_label_en TEXT,
+            image_base64 TEXT,
             status TEXT DEFAULT 'pending',
             report_verdict TEXT,
             report_notes TEXT,
             report_timestamp INTEGER
         )
     """)
+    # ترقية آمنة لقاعدة بيانات مُنشأة قبل إضافة عمود الصورة (لا يؤثر على تثبيت جديد)
+    existing_cols = {row["name"] for row in conn.execute("PRAGMA table_info(cases)").fetchall()}
+    if "image_base64" not in existing_cols:
+        conn.execute("ALTER TABLE cases ADD COLUMN image_base64 TEXT")
     conn.commit()
     conn.close()
 
@@ -99,6 +104,8 @@ class CaseReferral(BaseModel):
     marker: int = 74
     marker_label_ar: str = "مشتبه"
     marker_label_en: str = "Suspicious"
+    # صورة الآفة مُرمّزة Base64 (بدون البادئة data:image/...;base64,)
+    image_base64: Optional[str] = None
 
 
 class ExpertReport(BaseModel):
@@ -136,6 +143,7 @@ def row_to_case(row) -> dict:
         "marker": row["marker"],
         "markerLabel": row["marker_label_ar"],
         "markerLabelEn": row["marker_label_en"],
+        "imageBase64": row["image_base64"],
         "status": row["status"],
         "reportVerdict": row["report_verdict"],
         "reportNotes": row["report_notes"],
@@ -183,8 +191,8 @@ def create_case(payload: CaseReferral):
             id, hash, timestamp, risk, risk_label_ar, risk_label_en,
             age, sex_ar, sex_en, location_ar, location_en,
             attending_note_ar, attending_note_en, probs_json,
-            marker, marker_label_ar, marker_label_en, status
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            marker, marker_label_ar, marker_label_en, image_base64, status
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             case_id, gen_hash(), int(time.time() * 1000),
             payload.risk, payload.risk_label_ar, payload.risk_label_en,
@@ -193,6 +201,7 @@ def create_case(payload: CaseReferral):
             payload.attending_note_ar, payload.attending_note_en,
             json.dumps([p.dict() for p in payload.probs]),
             payload.marker, payload.marker_label_ar, payload.marker_label_en,
+            payload.image_base64,
             "pending",
         ),
     )
