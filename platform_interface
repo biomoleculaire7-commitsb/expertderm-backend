@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ExpertDerm — منصة استشارة الخبير</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F0E8; --panel:#FFFFFF; --ink:#182624; --ink-soft:#5B6864; --line:#E4DECF;
+    --teal:#1F5C56; --teal-dark:#15423D; --teal-soft:#E3EEEC;
+    --sage:#7E9C8F; --rust:#B5502E; --rust-soft:#F6E6DF;
+    --amber:#A8791E; --amber-soft:#F3E9D2; --ok:#3C7A5A; --ok-soft:#E4F0E7;
+    --radius:14px; --radius-sm:9px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo',sans-serif;font-size:14px;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .en{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;color:var(--ink-soft);direction:ltr;unicode-bidi:isolate;}
+
+  /* ---------- Layout ---------- */
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{
+    width:224px;flex-shrink:0;background:var(--teal-dark);color:#EAF2EF;
+    display:flex;flex-direction:column;padding:20px 14px;
+  }
+  .brand-row{display:flex;align-items:center;gap:10px;padding:4px 6px 22px;}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:#EAF2EF;color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
+  .brand-name{font-size:15px;font-weight:800;line-height:1.3;}
+  .brand-tag{font-size:10px;color:#9FBDB5;letter-spacing:.03em;}
+
+  .nav-item{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+    color:#C9DBD6;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:2px;
+  }
+  .nav-item svg{width:16px;height:16px;stroke:#C9DBD6;fill:none;stroke-width:1.8;flex-shrink:0;}
+  .nav-item .en{color:#7FA097;font-size:76%;}
+  .nav-item:hover{background:rgba(255,255,255,.06);}
+  .nav-item.active{background:#EAF2EF;color:var(--teal-dark);}
+  .nav-item.active svg{stroke:var(--teal-dark);}
+  .nav-item.active .en{color:#4A8079;}
+
+  .nav-section{font-size:10px;color:#6F958C;text-transform:uppercase;letter-spacing:.06em;margin:16px 10px 6px;}
+
+  .sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);}
+  .doctor-mini{display:flex;align-items:center;gap:9px;padding:6px;}
+  .doctor-avatar{width:32px;height:32px;border-radius:50%;background:#2A6960;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .doctor-mini-name{font-size:12.5px;font-weight:700;color:#EAF2EF;line-height:1.3;}
+  .doctor-mini-role{font-size:10px;color:#8CB0A7;display:flex;align-items:center;gap:4px;}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:#4FBF8A;display:inline-block;}
+
+  .main{flex:1;padding:26px 32px 50px;max-width:1200px;}
+
+  .page-label{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .page-label .badge{background:var(--ink);color:#fff;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap;}
+  .page-label .badge .en{color:#C8C8C8;font-size:80%;}
+  .page-label .desc{font-size:12.5px;color:var(--ink-soft);}
+
+  .topline{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .page-title{font-size:21px;font-weight:800;line-height:1.3;}
+  .page-title .en{font-size:55%;font-weight:500;margin-top:2px;}
+  .page-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+
+  .platform-note{background:var(--amber-soft);color:#5C4419;border:1px solid #E0CB94;border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;font-size:12.5px;line-height:1.75;}
+  .platform-note strong{display:block;margin-bottom:1px;color:var(--amber);}
+  .platform-note .en{color:#8C6614;font-size:88%;}
+
+  /* ---------- Stat cards ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;}
+  .stat-num{font-size:24px;font-weight:800;line-height:1.2;}
+  .stat-label{font-size:11.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+  .stat-label .en{font-size:85%;}
+  .stat-trend{font-size:10.5px;font-weight:700;margin-top:6px;display:inline-block;padding:2px 7px;border-radius:999px;}
+  .trend-up{background:var(--ok-soft);color:var(--ok);}
+  .trend-flat{background:var(--teal-soft);color:var(--teal);}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  .search-box{
+    flex:1;min-width:180px;display:flex;align-items:center;gap:8px;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;
+  }
+  .search-box svg{width:14px;height:14px;stroke:var(--ink-soft);fill:none;stroke-width:2;flex-shrink:0;}
+  .search-box input{border:none;background:transparent;outline:none;font-family:'Cairo',sans-serif;font-size:12.5px;width:100%;color:var(--ink);}
+  .filter-chip{
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
+    font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+  }
+  .filter-chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  /* ---------- Layout grid for queue view ---------- */
+  .grid{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;}
+
+  .queue-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .queue-scroll{max-height:640px;overflow-y:auto;}
+  .case-item{padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;flex-direction:column;gap:6px;}
+  .case-item:last-child{border-bottom:none;}
+  .case-item:hover{background:var(--bg);}
+  .case-item.selected{background:var(--teal-soft);box-shadow:inset 3px 0 0 var(--teal);}
+  .case-top{display:flex;justify-content:space-between;align-items:center;}
+  .case-id{font-size:12.5px;font-weight:700;}
+  .case-time{font-size:10.5px;color:var(--ink-soft);text-align:left;}
+  .case-meta-line{font-size:11px;color:var(--ink-soft);}
+  .risk-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;width:fit-content;line-height:1.5;}
+  .risk-badge .en{font-size:82%;}
+  .status-row{display:flex;align-items:center;flex-wrap:wrap;}
+  .risk-high{background:var(--rust-soft);color:var(--rust);}
+  .risk-medium{background:var(--amber-soft);color:var(--amber);}
+  .risk-low{background:var(--ok-soft);color:var(--ok);}
+
+  /* ---------- Detail panel ---------- */
+  .detail-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;}
+  .detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:12px;}
+  .patient-id{font-size:19px;font-weight:800;}
+  .patient-meta{font-size:12px;color:var(--ink-soft);margin-top:5px;line-height:1.7;}
+  .patient-meta .en{font-size:87%;}
+  .patient-meta b{color:var(--ink);font-weight:700;}
+  .enc-badge{display:flex;flex-direction:column;gap:1px;background:var(--teal-soft);color:var(--teal);font-size:11px;font-weight:700;padding:7px 13px;border-radius:12px;white-space:nowrap;line-height:1.5;}
+  .enc-badge .en{color:#3E7A72;font-size:82%;}
+
+  .attending-note{
+    background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;margin-bottom:18px;font-size:12px;line-height:1.7;
+  }
+  .attending-note .label{font-weight:700;color:var(--ink-soft);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;}
+  .attending-note .label .en{font-size:88%;text-transform:none;}
+  .attending-note .en{font-size:88%;}
+
+  .agent-summary{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+  .agent-chip{
+    flex:1;min-width:110px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:8px 10px;display:flex;align-items:center;gap:7px;
+  }
+  .agent-chip svg{width:13px;height:13px;stroke:var(--teal);fill:none;stroke-width:2;flex-shrink:0;}
+  .agent-chip-text{font-size:10px;line-height:1.4;}
+  .agent-chip-text b{display:block;font-size:11px;font-weight:700;}
+  .agent-chip-text .en{font-size:85%;}
+
+  .content-cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+
+  .image-box{background:#EDE9DE;border-radius:10px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:12.5px;text-align:center;padding:12px;position:relative;overflow:hidden;border:1px solid var(--line);line-height:1.6;}
+  .image-box .en{font-size:85%;}
+  .toggle-row{display:flex;gap:8px;margin-top:10px;}
+  .toggle-btn{flex:1;padding:7px 10px;font-size:11.5px;font-weight:700;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink-soft);cursor:pointer;font-family:'Cairo',sans-serif;line-height:1.4;}
+  .toggle-btn .en{font-size:80%;}
+  .toggle-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .toggle-btn.active .en{color:#CFE3DF;}
+
+  .section-label{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;line-height:1.5;}
+  .section-label .en{font-size:85%;text-transform:none;letter-spacing:0;}
+
+  .prob-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .prob-name{width:56px;font-size:12px;font-weight:600;flex-shrink:0;}
+  .prob-track{flex:1;height:8px;background:var(--bg);border-radius:999px;overflow:hidden;}
+  .prob-fill{height:100%;background:var(--sage);}
+  .prob-fill.top{background:var(--rust);}
+  .prob-val{width:40px;text-align:left;font-size:11.5px;color:var(--ink-soft);}
+
+  .spectrum-wrap{margin-top:16px;}
+  .spectrum-bar{display:flex;height:10px;border-radius:999px;overflow:hidden;position:relative;}
+  .spectrum-bar span{flex:1;}
+  .spectrum-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-soft);margin-top:6px;}
+  .spectrum-marker{position:absolute;top:-5px;width:2px;height:20px;background:var(--ink);}
+  .spectrum-marker::after{content:attr(data-label);position:absolute;top:-22px;right:50%;transform:translateX(50%);font-size:10.5px;font-weight:700;white-space:nowrap;}
+
+  .expert-panel{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);}
+  .field-row{margin-bottom:14px;}
+  .field-label{font-size:12px;font-weight:600;margin-bottom:6px;display:block;line-height:1.5;}
+  .field-label .en{font-size:82%;}
+  select, textarea{width:100%;font-family:'Cairo',sans-serif;font-size:13px;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);}
+  textarea{resize:vertical;min-height:76px;}
+  .actions-row{display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap;}
+  .btn-primary{background:var(--teal);color:#fff;border:none;padding:11px 22px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;line-height:1.4;}
+  .btn-primary .en{color:#CFE3DF;font-size:78%;}
+  .send-note{font-size:11.5px;color:var(--ink-soft);line-height:1.5;}
+  .send-note .en{font-size:85%;}
+
+  /* ---------- History table ---------- */
+  .history-table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .history-table th{text-align:right;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg);}
+  .history-table td{padding:13px 16px;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .history-table tr:last-child td{border-bottom:none;}
+  .verdict-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--ok-soft);color:var(--ok);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--teal);color:#fff;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .25s ease, transform .25s ease;pointer-events:none;text-align:center;line-height:1.5;z-index:50;}
+  .toast .en{color:#CFE3DF;font-size:80%;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:980px){
+    .shell{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;align-items:center;padding:12px 16px;}
+    .sidebar-footer{margin-top:0;padding-top:0;border-top:none;margin-right:auto;}
+    .nav-section{display:none;}
+    .grid{grid-template-columns:1fr;}
+    .content-cols{grid-template-columns:1fr;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="sidebar">
+    <div class="brand-row">
+      <div class="brand-mark">ED</div>
+      <div>
+        <div class="brand-name">ExpertDerm</div>
+        <div class="brand-tag">SPECIALIST CONSOLE</div>
+      </div>
+    </div>
+
+    <div class="nav-section">العمل<span class="en">Workspace</span></div>
+    <div class="nav-item active" data-view="queue" onclick="setView('queue')">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      <span>الحالات المُحالة<span class="en">Referred Cases</span></span>
+    </div>
+    <div class="nav-item" data-view="history" onclick="setView('history')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+      <span>سجل التقارير<span class="en">Report History</span></span>
+    </div>
+    <div class="nav-item" data-view="stats" onclick="setView('stats')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>الإحصائيات<span class="en">Statistics</span></span>
+    </div>
+
+    <div class="nav-section">الحساب<span class="en">Account</span></div>
+    <div class="nav-item" data-view="settings" onclick="setView('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>الإعدادات<span class="en">Settings</span></span>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="doctor-mini">
+        <div class="doctor-avatar">ع.ق</div>
+        <div>
+          <div class="doctor-mini-name">د. عبدالقادر</div>
+          <div class="doctor-mini-role"><span class="status-dot"></span>خبير جلدية · متصل</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-label">
+      <span class="badge">واجهة المنصة (Web) — للخبير فقط<span class="en">Platform Interface (Web) — expert only</span></span>
+      <span class="desc">منفصلة تمامًا عن تطبيق SkinSense. لا التقاط صور هنا، فقط مراجعة حالات وصلت جاهزة من الطبيب المعالج.<span class="en">Fully separate from the SkinSense app. No photo capture here — only review of cases already sent by the attending physician.</span></span>
+    </div>
+
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      <label style="font-size:12px;font-weight:700;white-space:nowrap;">رابط الخادم (Backend URL):</label>
+      <input id="apiUrlInput" class="mono" style="flex:1;min-width:220px;font-size:12.5px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);" value="" oninput="API_BASE_URL = this.value.replace(/\/$/, ''); refreshQueue();">
+      <script>document.getElementById('apiUrlInput').value = window.location.origin;</script>
+      <span style="font-size:11px;color:var(--ink-soft);">نفس الرابط المُستخدم في تطبيق SkinSense<span class="en" style="display:inline;">Same URL used in the SkinSense app</span></span>
+    </div>
+
+    <div id="viewRoot"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">تم إرسال التقرير إلى تطبيق SkinSense<span class="en">Report sent to the SkinSense app</span></div>
+
+<script>
+// ---------------- Icons ----------------
+const ICONS = {
+  encrypt: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`,
+  scan: `<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>`,
+  layers: `<svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+  brain: `<svg viewBox="0 0 24 24"><path d="M9 3a3 3 0 00-3 3v1a3 3 0 00-2 5 3 3 0 002 5 3 3 0 003 3h1M15 3a3 3 0 013 3v1a3 3 0 012 5 3 3 0 01-2 5 3 3 0 01-3 3h-1M12 3v18"/></svg>`,
+  gauge: `<svg viewBox="0 0 24 24"><path d="M12 20a8 8 0 100-16 8 8 0 000 16z"/><path d="M12 12l4-3"/></svg>`,
+  search: `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+};
+function icon(n){ return ICONS[n] || ''; }
+
+// ---------------- Data ----------------
+const demoCases = [
+  {
+    id:'PT-9021-K7', hash:'7bd4...e410', time:'قبل 4 دقائق', timeEn:'4 min ago',
+    risk:'high', riskLabel:'خطورة مرتفعة', riskLabelEn:'High risk',
+    age:45, sex:'ذكر', sexEn:'Male', location:'الساعد الأيسر', locationEn:'Left forearm',
+    attendingNote:'الآفة موجودة منذ 3 أشهر، تغيّر لونها مؤخرًا وازداد حجمها قليلًا.',
+    attendingNoteEn:"Lesion present for 3 months, recent color change and slight size increase.",
+    probs:[{name:'MEL', val:71, top:true},{name:'BCC', val:14},{name:'NV', val:9},{name:'BKL', val:6}],
+    marker:74, markerLabel:'مشتبه', markerLabelEn:'Suspicious'
+  },
+  {
+    id:'PT-7841-A2', hash:'a1f9...4c02', time:'قبل 6 دقائق', timeEn:'6 min ago',
+    risk:'high', riskLabel:'خطورة مرتفعة', riskLabelEn:'High risk',
+    age:52, sex:'أنثى', sexEn:'Female', location:'الساعد الأيمن', locationEn:'Right forearm',
+    attendingNote:'حافة غير منتظمة ولون غير متجانس، أفضّل رأي خبير قبل أي إجراء.',
+    attendingNoteEn:'Irregular border and non-uniform color, prefer an expert opinion before any procedure.',
+    probs:[{name:'MEL', val:68, top:true},{name:'BCC', val:16},{name:'NV', val:10},{name:'BKL', val:6}],
+    marker:70, markerLabel:'مشتبه', markerLabelEn:'Suspicious'
+  },
+  {
+    id:'PT-7839-C1', hash:'d4e2...9b31', time:'قبل 22 دقيقة', timeEn:'22 min ago',
+    risk:'medium', riskLabel:'خطورة متوسطة', riskLabelEn:'Medium risk',
+    age:38, sex:'ذكر', sexEn:'Male', location:'أعلى الظهر', locationEn:'Upper back',
+    attendingNote:'المريض يعمل خارجيًا لساعات طويلة، تعرّض شمسي متكرر في هذه المنطقة.',
+    attendingNoteEn:'Patient works outdoors for long hours, repeated sun exposure in this area.',
+    probs:[{name:'BCC', val:48, top:true},{name:'AKIEC', val:22},{name:'NV', val:18},{name:'BKL', val:12}],
+    marker:52, markerLabel:'يستدعي تدقيق', markerLabelEn:'Needs review'
+  },
+];
+
+// عنوان الخادم الخلفي — استبدله برابط Render الفعلي بعد النشر
+let API_BASE_URL = window.__API_BASE_URL || window.location.origin;
+let cases = [...demoCases];
+let liveCaseCount = 0;
+let queueLoading = false;
+let lastLoadError = null;
+
+function relativeTime(ts){
+  const diffMin = Math.round((Date.now() - ts) / 60000);
+  if(diffMin < 1) return {ar:'الآن', en:'just now'};
+  if(diffMin < 60) return {ar:`قبل ${diffMin} دقيقة`, en:`${diffMin} min ago`};
+  const diffH = Math.round(diffMin/60);
+  return {ar:`قبل ${diffH} ساعة`, en:`${diffH} hour(s) ago`};
+}
+
+function mapApiCase(c){
+  const t = relativeTime(c.timestamp || Date.now());
+  return {
+    id: c.id, hash: c.hash, time: t.ar, timeEn: t.en,
+    risk: c.risk, riskLabel: c.riskLabel, riskLabelEn: c.riskLabelEn,
+    age: c.age, sex: c.sex, sexEn: c.sexEn,
+    location: c.location, locationEn: c.locationEn,
+    attendingNote: c.attendingNote, attendingNoteEn: c.attendingNoteEn,
+    probs: c.probs, marker: c.marker,
+    markerLabel: c.markerLabel, markerLabelEn: c.markerLabelEn,
+    live: true,
+  };
+}
+
+async function loadReferredCases(){
+  queueLoading = true;
+  lastLoadError = null;
+  let liveCases = [];
+  try{
+    const res = await fetch(`${API_BASE_URL}/api/cases?status=pending`);
+    if(!res.ok){ throw new Error(`HTTP ${res.status}`); }
+    const raw = await res.json();
+    liveCases = raw.map(mapApiCase);
+  }catch(err){
+    console.error('Failed to load referred cases:', err);
+    lastLoadError = err.message || 'network error';
+    liveCases = [];
+  }
+  liveCaseCount = liveCases.length;
+  cases = [...liveCases, ...demoCases];
+  queueLoading = false;
+}
+
+const history = [
+  {id:'PT-7835-F0', date:'اليوم 09:14', dateEn:'Today 09:14', verdictAr:'حميد، لا داعي للقلق', verdictEn:'Benign, no concern'},
+  {id:'PT-7801-M3', date:'أمس 17:40', dateEn:'Yesterday 17:40', verdictAr:'متابعة خلال أسبوعين', verdictEn:'Follow-up in 2 weeks'},
+  {id:'PT-7788-Q9', date:'أمس 11:02', dateEn:'Yesterday 11:02', verdictAr:'إحالة عاجلة لعيادة جلدية', verdictEn:'Urgent dermatology referral'},
+];
+
+let currentView = 'queue';
+let selectedId = cases[0].id;
+let camMode = false;
+let riskFilter = 'all';
+
+function setView(v){
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === v));
+  renderView();
+}
+
+function riskClass(r){ return r==='high' ? 'risk-high' : r==='medium' ? 'risk-medium' : 'risk-low'; }
+
+// ---------------- QUEUE VIEW ----------------
+function renderQueueView(){
+  const filtered = cases.filter(c => riskFilter==='all' || c.risk===riskFilter);
+  return `
+    <div class="topline">
+      <div>
+        <div class="page-title">الحالات المُحالة<span class="en">Referred Cases</span></div>
+        <div class="page-sub">حالات وصلت من أطباء معالجين عبر تطبيق SkinSense<span class="en">Cases received from attending physicians via the SkinSense app</span></div>
+      </div>
+      <div class="stat-trend trend-up" id="pendingCounter">${cases.length} بانتظار المراجعة<span class="en" style="display:inline;color:inherit;">${cases.length} awaiting review</span></div>
+    </div>
+
+    <div class="platform-note" ${lastLoadError ? 'style="background:var(--rust-soft);border-color:#DDB39F;color:#7A3A22;"' : ''}>
+      ${lastLoadError ? `
+        <strong style="color:var(--rust);">تعذّر الاتصال بالخادم الخلفي.<span class="en" style="color:var(--rust);">Could not reach the backend server.</span></strong>
+        تحقّق من رابط الخادم أعلاه وأنه منشور فعليًا على Render، ثم اضغط تحديث.
+        <span class="en">Check the server URL above and make sure it's actually deployed on Render, then press Refresh.</span>
+      ` : `
+        <strong>هذه المنصة لا تلتقط صورًا ولا تتواصل مع المرضى مباشرة.<span class="en" style="color:var(--amber);">This platform does not capture photos or contact patients directly.</span></strong>
+        كل حالة هنا وصلت جاهزة (صورة + بيانات مجهولة + رأي الطبيب المعالج) من تطبيق SkinSense.
+        <span class="en">Every case here already arrived complete (image + anonymized data + attending physician's note) from the SkinSense app.</span>
+        ${liveCaseCount > 0 ? `<div style="margin-top:8px;font-weight:700;color:var(--teal);">${liveCaseCount} حالة وصلت فعليًا عبر اتصال حي بالتطبيق<span class="en" style="color:var(--teal);">${liveCaseCount} case(s) arrived via a live connection with the App</span></div>` : ''}
+      `}
+    </div>
+
+    <div class="grid">
+      <div class="queue-panel">
+        <div class="toolbar" style="padding:12px 12px 0;">
+          <div class="search-box">${icon('search')}<input placeholder="بحث برقم الحالة... / Search case ID..." oninput="onSearch(this.value)"></div>
+          <button class="filter-chip" id="refreshBtn" onclick="refreshQueue()" style="cursor:pointer;">↻ تحديث<span class="en" style="display:inline;">Refresh</span></button>
+        </div>
+        <div class="toolbar" style="padding:10px 12px 12px;">
+          <span class="filter-chip ${riskFilter==='all'?'active':''}" onclick="setFilter('all')">الكل<span class="en" style="display:inline;">All</span></span>
+          <span class="filter-chip ${riskFilter==='high'?'active':''}" onclick="setFilter('high')">مرتفعة<span class="en" style="display:inline;">High</span></span>
+          <span class="filter-chip ${riskFilter==='medium'?'active':''}" onclick="setFilter('medium')">متوسطة<span class="en" style="display:inline;">Medium</span></span>
+        </div>
+        <div class="queue-scroll" id="caseList"></div>
+      </div>
+      <div class="detail-panel" id="detailPanel"></div>
+    </div>
+  `;
+}
+
+function setFilter(f){ riskFilter = f; renderView(); }
+function onSearch(q){
+  const items = document.querySelectorAll('#caseList .case-item');
+  items.forEach(it => {
+    it.style.display = it.dataset.id.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function renderCaseList(){
+  const el = document.getElementById('caseList');
+  if(!el) return;
+  const filtered = cases.filter(c => riskFilter==='all' || c.risk===riskFilter);
+  el.innerHTML = filtered.map(c => `
+    <div class="case-item ${c.id===selectedId?'selected':''}" data-id="${c.id}" onclick="selectCase('${c.id}')">
+      <div class="case-top">
+        <span class="case-id mono">${c.id}</span>
+        <span class="case-time">${c.time}<span class="en">${c.timeEn}</span></span>
+      </div>
+      <div class="case-meta-line">${c.age}y · ${c.locationEn}</div>
+      <div class="status-row" style="gap:6px;">
+        <span class="risk-badge ${riskClass(c.risk)}">${c.riskLabel}<span class="en">${c.riskLabelEn}</span></span>
+        ${c.live ? '<span class="risk-badge" style="background:var(--teal-soft);color:var(--teal);">مباشر<span class="en">Live</span></span>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSpectrum(marker, markerLabel, markerLabelEn){
+  return `
+    <div class="spectrum-wrap">
+      <div class="section-label">مؤشر الخطورة الإجمالي<span class="en">Overall risk indicator</span></div>
+      <div style="position:relative; margin-top:22px;">
+        <div class="spectrum-bar">
+          <span style="background:#B7D9C7;"></span>
+          <span style="background:#EBD08A;"></span>
+          <span style="background:#E3A27C;"></span>
+          <span style="background:#C96A44;"></span>
+        </div>
+        <div class="spectrum-marker" style="right:${marker}%;" data-label="${markerLabel} / ${markerLabelEn}"></div>
+      </div>
+      <div class="spectrum-labels">
+        <span>حميد <span class="en" style="display:inline;">Benign</span></span>
+        <span>مرتفع الخطورة <span class="en" style="display:inline;">High risk</span></span>
+      </div>
+    </div>
+  `;
+}
+
+function renderDetail(){
+  const el = document.getElementById('detailPanel');
+  if(!el) return;
+  const c = cases.find(x => x.id === selectedId);
+  el.innerHTML = `
+    <div class="detail-head">
+      <div>
+        <div class="patient-id mono">${c.id}</div>
+        <div class="patient-meta">
+          <b>${c.age}</b> سنة/y · ${c.sex}<span class="en" style="display:inline;">/${c.sexEn}</span> · موضع الآفة: ${c.location}<span class="en">Age ${c.age} · ${c.sexEn} · Site: ${c.locationEn}</span>
+        </div>
+        <div class="patient-meta">أُحيلت: ${c.time} · عبر طبيب معالج عام<span class="en">Referred: ${c.timeEn} · via general attending physician</span></div>
+      </div>
+      <div class="enc-badge">${icon('encrypt')}<span style="margin-top:4px;">مشفّرة AES-256<span class="en">Encrypted AES-256</span></span><span class="mono" style="font-size:10px;margin-top:3px;">${c.hash}</span></div>
+    </div>
+
+    <div class="attending-note">
+      <span class="label">ملاحظة الطبيب المعالج<span class="en">Attending physician's note</span></span>
+      ${c.attendingNote}<span class="en">${c.attendingNoteEn}</span>
+    </div>
+
+    <div class="agent-summary">
+      <div class="agent-chip">${icon('scan')}<div class="agent-chip-text"><b>الاستقبال</b><span class="en">Intake</span></div></div>
+      <div class="agent-chip">${icon('layers')}<div class="agent-chip-text"><b>المعالجة</b><span class="en">Preprocess</span></div></div>
+      <div class="agent-chip">${icon('brain')}<div class="agent-chip-text"><b>التصنيف</b><span class="en">Classify</span></div></div>
+      <div class="agent-chip">${icon('gauge')}<div class="agent-chip-text"><b>الخطورة</b><span class="en">Risk score</span></div></div>
+    </div>
+
+    <div class="content-cols">
+      <div>
+        <div class="section-label">صورة الآفة<span class="en">Lesion image</span></div>
+        <div class="image-box">${camMode ? 'خريطة Grad-CAM (منطقة تركيز النموذج)<span class="en">Grad-CAM heatmap (model focus area)</span>' : 'صورة الآفة (من التطبيق)<span class="en">Lesion photo (from the App)</span>'}</div>
+        <div class="toggle-row">
+          <button class="toggle-btn ${!camMode?'active':''}" onclick="setCam(false)">الصورة الأصلية<span class="en">Original photo</span></button>
+          <button class="toggle-btn ${camMode?'active':''}" onclick="setCam(true)">تفسير Grad-CAM<span class="en">Grad-CAM view</span></button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">توزيع احتمالات وكيل التصنيف<span class="en">Classification agent breakdown</span></div>
+        ${c.probs.map(p => `
+          <div class="prob-row">
+            <span class="prob-name">${p.name}</span>
+            <div class="prob-track"><div class="prob-fill ${p.top?'top':''}" style="width:${p.val}%;"></div></div>
+            <span class="prob-val">${p.val}%</span>
+          </div>
+        `).join('')}
+        ${renderSpectrum(c.marker, c.markerLabel, c.markerLabelEn)}
+      </div>
+    </div>
+
+    <div class="expert-panel">
+      <div class="section-label">رأي الخبير<span class="en">Expert assessment</span></div>
+      <div class="field-row">
+        <label class="field-label">التقييم النهائي<span class="en">Final verdict</span></label>
+        <select id="verdictSelect">
+          <option>يتطلب إحالة عاجلة لطبيب جلدية / Urgent dermatology referral needed</option>
+          <option>يتطلب متابعة خلال أسبوعين / Follow up within 2 weeks</option>
+          <option>حميد، لا داعي للقلق / Benign, no concern</option>
+          <option>الصورة غير كافية، يلزم إعادة التقاط / Image insufficient, retake needed</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">ملاحظات للطبيب المعالج والمريض (ستظهر في التطبيق)<span class="en">Notes for the attending physician &amp; patient (will appear in the App)</span></label>
+        <textarea id="notesArea" placeholder="مثال: يُنصح بخزعة تأكيدية خلال 3 أيام. / e.g. A confirmatory biopsy is recommended within 3 days."></textarea>
+      </div>
+      <div class="actions-row">
+        <button class="btn-primary" onclick="sendReport()">إرسال التقرير لتطبيق SkinSense<span class="en">Send report to SkinSense App</span></button>
+        <span class="send-note">سيصل إشعار فوري للطبيب المعالج والمريض<span class="en">The attending physician and patient will be notified instantly</span></span>
+      </div>
+    </div>
+  `;
+}
+
+function setCam(v){ camMode = v; renderDetail(); }
+function selectCase(id){ selectedId = id; camMode = false; renderCaseList(); renderDetail(); }
+
+async function sendReport(){
+  const btn = document.querySelector('.expert-panel .btn-primary');
+  const verdict = (document.getElementById('verdictSelect') || {}).value || '';
+  const notes = (document.getElementById('notesArea') || {}).value || '';
+  const c = cases.find(x => x.id === selectedId);
+
+  if(btn) btn.innerHTML = 'جاري الإرسال...<span class="en">Sending…</span>';
+
+  try{
+    if(c && c.live){
+      const res = await fetch(`${API_BASE_URL}/api/cases/${c.id}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verdict, notes }),
+      });
+      if(!res.ok){ throw new Error(`HTTP ${res.status}`); }
+    }
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(()=> toast.classList.remove('show'), 2600);
+    await refreshQueue();
+  }catch(err){
+    console.error('Failed to send report:', err);
+    alert('تعذّر إرسال التقرير، تحقق من الاتصال بالخادم. / Failed to send report, check server connection.');
+    renderDetail();
+  }
+}
+
+// ---------------- HISTORY VIEW ----------------
+function renderHistoryView(){
+  return `
+    <div class="topline">
+      <div>
+        <div class="page-title">سجل التقارير المُرسلة<span class="en">Sent Report History</span></div>
+        <div class="page-sub">كل الحالات التي أنهيت مراجعتها وأرسلت رأيك بشأنها<span class="en">All cases you've reviewed and sent your assessment on</span></div>
+      </div>
+    </div>
+    <table class="history-table">
+      <thead><tr>
+        <th>رقم الحالة<span class="en">Case ID</span></th>
+        <th>التاريخ<span class="en">Date</span></th>
+        <th>القرار<span class="en">Verdict</span></th>
+      </tr></thead>
+      <tbody>
+        ${history.map(h => `
+          <tr>
+            <td class="mono">${h.id}</td>
+            <td>${h.date}<span class="en">${h.dateEn}</span></td>
+            <td><span class="verdict-pill">${h.verdictAr}<span class="en" style="color:inherit;display:inline;">/ ${h.verdictEn}</span></span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+// ---------------- STATS VIEW ----------------
+function renderStatsView(){
+  return `
+    <div class="topline">
+      <div>
+        <div class="page-title">إحصائيات أدائك<span class="en">Your Performance Statistics</span></div>
+        <div class="page-sub">نظرة سريعة على نشاطك كخبير على المنصة<span class="en">A quick overview of your activity as an expert on the platform</span></div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-num">47</div>
+        <div class="stat-label">حالات رُوجعت هذا الشهر<span class="en">Cases reviewed this month</span></div>
+        <span class="stat-trend trend-up">+12%<span class="en" style="display:inline;color:inherit;"> vs last month</span></span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">18<span style="font-size:14px;font-weight:600;"> د/min</span></div>
+        <div class="stat-label">متوسط زمن الرد<span class="en">Average response time</span></div>
+        <span class="stat-trend trend-flat">مستقر<span class="en" style="display:inline;color:inherit;"> Stable</span></span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">91%</div>
+        <div class="stat-label">توافق مع تقييم النموذج<span class="en">Agreement with AI assessment</span></div>
+        <span class="stat-trend trend-up">+3%<span class="en" style="display:inline;color:inherit;"> vs last month</span></span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">حالات بانتظارك الآن<span class="en">Cases awaiting you now</span></div>
+        <span class="stat-trend trend-flat">مباشر<span class="en" style="display:inline;color:inherit;"> Live</span></span>
+      </div>
+    </div>
+  `;
+}
+
+// ---------------- SETTINGS VIEW ----------------
+function renderSettingsView(){
+  return `
+    <div class="topline">
+      <div>
+        <div class="page-title">إعدادات الحساب<span class="en">Account Settings</span></div>
+        <div class="page-sub">إدارة بيانات ملفك كخبير على المنصة<span class="en">Manage your expert profile on the platform</span></div>
+      </div>
+    </div>
+    <div class="detail-panel" style="max-width:520px;">
+      <div class="field-row">
+        <label class="field-label">الاسم الكامل<span class="en">Full name</span></label>
+        <select><option>د. عبدالقادر — خبير جلدية / Dr. Abdelkader — Dermatology Expert</option></select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">التخصص<span class="en">Specialty</span></label>
+        <select><option>أمراض جلدية وتناسلية / Dermatology &amp; Venereology</option></select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">حالة التوفر<span class="en">Availability status</span></label>
+        <select><option>متصل، أستقبل حالات جديدة / Online, accepting new cases</option><option>غير متصل / Offline</option></select>
+      </div>
+      <button class="btn-primary">حفظ التغييرات<span class="en">Save changes</span></button>
+    </div>
+  `;
+}
+
+async function renderView(){
+  const root = document.getElementById('viewRoot');
+  if(currentView === 'queue'){
+    root.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-soft);font-size:13px;">جاري التحقق من حالات جديدة... <span class="en">Checking for new cases…</span></div>';
+    await loadReferredCases();
+    if(!cases.find(c => c.id === selectedId)){ selectedId = cases[0].id; }
+    root.innerHTML = renderQueueView();
+    renderCaseList();
+    renderDetail();
+  } else if(currentView === 'history'){
+    root.innerHTML = renderHistoryView();
+  } else if(currentView === 'stats'){
+    root.innerHTML = renderStatsView();
+  } else {
+    root.innerHTML = renderSettingsView();
+  }
+}
+
+async function refreshQueue(){
+  const btn = document.getElementById('refreshBtn');
+  if(btn) btn.innerHTML = '⏳ جاري التحقق...<span class="en" style="display:inline;">Checking…</span>';
+  await loadReferredCases();
+  renderCaseList();
+  const counter = document.getElementById('pendingCounter');
+  if(counter){
+    counter.innerHTML = `${cases.length} بانتظار المراجعة<span class="en" style="display:inline;color:inherit;">${cases.length} awaiting review</span>`;
+  }
+  if(!cases.find(c => c.id === selectedId)){ selectedId = cases[0].id; }
+  renderDetail();
+}
+
+renderView();
+</script>
+</body>
+</html>
