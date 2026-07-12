@@ -494,7 +494,15 @@ function renderDetail(){
     <div class="content-cols">
       <div>
         <div class="section-label">صورة الآفة<span class="en">Lesion image</span></div>
-        <div class="image-box">${camMode ? 'خريطة Grad-CAM (منطقة تركيز النموذج)<span class="en">Grad-CAM heatmap (model focus area)</span>' : 'صورة الآفة (من التطبيق)<span class="en">Lesion photo (from the App)</span>'}</div>
+        <div class="image-box">${
+          c.imageBase64
+            ? `<img src="data:image/jpeg;base64,${c.imageBase64}" alt="lesion" style="width:100%;height:100%;object-fit:cover;${camMode ? 'filter:hue-rotate(300deg) saturate(2) contrast(1.3);' : ''}">`
+            : (camMode
+                ? 'خريطة Grad-CAM (منطقة تركيز النموذج)<span class="en">Grad-CAM heatmap (model focus area)</span>'
+                : (c.live
+                    ? '⚠️ لم تصل صورة مع هذه الحالة<span class="en">No image was received with this case</span>'
+                    : 'صورة توضيحية (حالة تجريبية)<span class="en">Placeholder (demo case)</span>'))
+        }</div>
         <div class="toggle-row">
           <button class="toggle-btn ${!camMode?'active':''}" onclick="setCam(false)">الصورة الأصلية<span class="en">Original photo</span></button>
           <button class="toggle-btn ${camMode?'active':''}" onclick="setCam(true)">تفسير Grad-CAM<span class="en">Grad-CAM view</span></button>
