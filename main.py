@@ -13,14 +13,15 @@ Endpoints:
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import sqlite3
 import json
 import time
+import os
 import random
 import string
-import os
 
 DB_PATH = os.environ.get("DB_PATH", "expertderm.db")
 
@@ -143,8 +144,23 @@ def row_to_case(row) -> dict:
 
 
 # ---------- Endpoints ----------
-@app.get("/")
-def root():
+PLATFORM_HTML_PATH = os.path.join(os.path.dirname(__file__), "platform_interface.html")
+
+
+@app.get("/", response_class=HTMLResponse)
+def serve_platform():
+    if not os.path.exists(PLATFORM_HTML_PATH):
+        return HTMLResponse(
+            "<h3>ملف platform_interface.html غير موجود في المستودع. "
+            "ارفعه بجانب main.py ثم أعد النشر.</h3>",
+            status_code=500,
+        )
+    with open(PLATFORM_HTML_PATH, "r", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
+
+
+@app.get("/api")
+def api_info():
     return {
         "service": "SkinSense/ExpertDerm API",
         "status": "running",
